@@ -9,10 +9,21 @@ def nerd(hand):
         and not s["pinky"]
     )
 
+def cool(hand):
+    """Thumb and pinky out, the other three fingers curled (the shaka)."""
+    s = hand.states
+    return (
+        s["thumb"]
+        and s["pinky"]
+        and not s["index"]
+        and not s["middle"]
+        and not s["ring"]
+    )
 
 # Every gesture lives in this list as (label, rule), rule is a function
 GESTURES = [
     ("nerd", nerd),
+    ("cool", cool)
 ]
 
 GESTURE_LABELS = [name for name, _ in GESTURES]
