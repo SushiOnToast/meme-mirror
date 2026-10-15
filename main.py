@@ -5,7 +5,7 @@ from expressions import ExpressionDetector, LABELS
 from hand_tracker import HandTracker
 from gestures import classify_gesture, GESTURE_LABELS
 
-DEBUG = True  
+DEBUG = False  
 
 MEME_SIZE = 480
 MEME_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "memes")
@@ -117,8 +117,8 @@ while True:
             for x, y2 in hand.pts:
                 cv2.circle(frame, (x, y2), 4, (0, 255, 0), -1)
 
-    cv2.putText(frame, label.upper(), (10, frame.shape[0] - 20),
-                cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 255), 3)
+    # cv2.putText(frame, label.upper(), (10, frame.shape[0] - 20),
+    #             cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 255), 3)
 
     cv2.imshow("Meme Mirror", frame)
     cv2.imshow("Meme", memes.get(label, blank))
