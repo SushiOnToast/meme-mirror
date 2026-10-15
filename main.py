@@ -45,7 +45,39 @@ def load_memes():
     return memes
 
 
+class LabelSmoother:
+    """Switches to new label after the new one has held for several frames, stops jittery images."""
+
+    def __init__(self, hold_frames=5, initial="neutral"):
+        self.hold_frames = hold_frames
+        self.current = initial # label being currently shown
+        self._new = initial # label trying to take over
+        self._count = 0 # number of frames the label held for
+    
+    def update(self, raw_label):
+        # if the raw label is the same as the current shown one, nothing happens - stays the same
+        if raw_label == self.current:
+            self._new = raw_label
+            self._count = 0
+            return self.current
+
+        # if raw is not the same, then we set the takeover label to raw and start counting frames
+        if raw_label == self._new:
+            self._count += 1
+        else:
+            self._new = raw_label
+            self._count = 1
+        
+        # if the count of the raw label has held long enough the new label becomes the current one
+        if self._count >= self.hold_frames:
+            self.current = raw_label
+            self._count = 0
+        
+        return self.current
+
+
 detector = ExpressionDetector()
+smoother = LabelSmoother(hold_frames=5)
 memes = load_memes()
 blank = make_placeholder("...")
 
@@ -61,7 +93,8 @@ while True:
 
     frame = cv2.flip(frame, 1)
 
-    label, info = detector.process(frame)
+    raw_label, info = detector.process(frame)
+    label = smoother.update(raw_label)
 
     if DEBUG:
         y = 30

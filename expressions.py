@@ -8,14 +8,14 @@ from mediapipe.tasks.python import vision
 LABELS = ["eyebrow", "happy", "teeth", "surprised", "side", "neutral"]
 
 # thresholds for detection
-SMILE = 0.45            # average smile score for happy
-TEETH_JAW = 0.12        # slightly parted lips means teeth showing
-TEETH_UPPER_LIP = 0.20  # upper lip lifting means teeth showing
-SURPRISE_JAW = 0.35     # must be sufficiently open to pass as surprised
+SMILE = 0.45 # average smile score for happy
+TEETH_JAW = 0.12 # slightly parted lips means teeth showing
+TEETH_UPPER_LIP = 0.20 # upper lip lifting means teeth showing
+SURPRISE_JAW = 0.35 # must be sufficiently open to pass as surprised
 SURPRISE_BROW = 0.40
-EYEBROW_RAISE = 0.06    # minimum increase for the raised eyebrow
-EYEBROW_LOW = 0.04      # maximum increase for the eyebrow that stays down
-YAW_LIMIT = 0.3         # how far the nose moves off-center for side profile
+EYEBROW_RAISE = 0.06 # minimum increase for the raised eyebrow
+EYEBROW_LOW = 0.04 # maximum increase for the eyebrow that stays down
+YAW_LIMIT = 0.3 # how far the nose moves off-center for side profile (left, right)
 
 CALIBRATION_FRAMES = 30
 MODEL_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
@@ -24,11 +24,11 @@ MODEL_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
 
 def head_turn(lm):
     """0 when facing the camera, positive/negative as the head turns."""
-    left, right, nose = lm[234].x, lm[454].x, lm[1].x
+    left, right, nose = lm[234].x, lm[454].x, lm[1].x # edge of face landmarks and nose
     width = right - left
     if abs(width) < 1e-6:
         return 0.0
-    return (nose - left) / width - 0.5
+    return (nose - left) / width - 0.5 # where the nose stands between the two, 0.5 = centre
 
 
 def detect_raised_eyebrow(scores, baseline):
