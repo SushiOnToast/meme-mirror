@@ -2,6 +2,8 @@ import os
 import cv2
 import numpy as np
 from expressions import ExpressionDetector, LABELS
+from hand_tracker import HandTracker
+from gestures import classify_gesture, GESTURE_LABELS
 
 DEBUG = True  
 
@@ -34,7 +36,7 @@ def fit_to_canvas(img, size=MEME_SIZE):
 def load_memes():
     """Load every meme once and return a {label: image} dictionary."""
     memes = {}
-    for label in LABELS:
+    for label in LABELS + GESTURE_LABELS:
         filename = label.replace(" ", "_") + ".jpg"
         img = cv2.imread(os.path.join(MEME_DIR, filename))
         if img is None:
@@ -77,6 +79,7 @@ class LabelSmoother:
 
 
 detector = ExpressionDetector()
+hand_tracker = HandTracker()
 smoother = LabelSmoother(hold_frames=5)
 memes = load_memes()
 blank = make_placeholder("...")
@@ -93,7 +96,14 @@ while True:
 
     frame = cv2.flip(frame, 1)
 
-    raw_label, info = detector.process(frame)
+    face_label, info = detector.process(frame)
+
+    hand = hand_tracker.process(frame)
+    gesture = classify_gesture(hand)
+
+    # a gesture overrides the face otherwise use the face label
+    raw_label = gesture if gesture != "none" else face_label
+
     label = smoother.update(raw_label)
 
     if DEBUG:
@@ -102,6 +112,10 @@ while True:
             cv2.putText(frame, f"{name} {value:+.2f}", (10, y),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
             y += 25
+        
+        if hand:
+            for x, y2 in hand.pts:
+                cv2.circle(frame, (x, y2), 4, (0, 255, 0), -1)
 
     cv2.putText(frame, label.upper(), (10, frame.shape[0] - 20),
                 cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 255), 3)
